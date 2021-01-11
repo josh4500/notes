@@ -1,15 +1,13 @@
-import 'package:json_annotation/json_annotation.dart';
-//part 'note.g.dart';
-//@JsonSerializable()
 class Note{
   int _id;
   bool _isTodo;
   String _title;
   String _infoNote;
-  String _date;
+  String _topDate;
+  String _tileDate;
   List<TodoNote> _todoNote;
 
-  Note(this._isTodo, this._title, this._infoNote, this._date, this._todoNote);
+  Note(this._isTodo, this._title, this._infoNote, this._topDate, this._tileDate,this._todoNote);
 
   Map<String, dynamic> toMap(){
     var map = Map<String, dynamic>();
@@ -17,7 +15,8 @@ class Note{
     map["isTodo"] = _isTodo;
     map["title"] = _title;
     map["infoNote"] = _infoNote;
-    map["date"] = _date;
+    map["topDate"] = _topDate;
+    map["tileDate"] = _tileDate;
     map["todoNote"] = _todoNote;
     return map;
 
@@ -30,7 +29,8 @@ class Note{
     _isTodo = map["isTodo"];
     _title = map["title"];
     _infoNote = map["infoNote"];
-    _date = map["date"];
+    _topDate = map["topDate"];
+    _tileDate = map["tileDate"];
     _todoNote = todoNote;
 
   }
@@ -62,11 +62,19 @@ class Note{
   }
 
   // ignore: unnecessary_getters_setters
-  String get date => _date;
+  String get topDate => _topDate;
 
   // ignore: unnecessary_getters_setters
-  set date(String value) {
-    _date = value;
+  set topDate(String value) {
+    _topDate = value;
+  }
+
+  // ignore: unnecessary_getters_setters
+  String get tileDate => _tileDate;
+
+  // ignore: unnecessary_getters_setters
+  set tileDate(String value){
+    _tileDate = value;
   }
 
   // ignore: unnecessary_getters_setters

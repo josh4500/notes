@@ -33,6 +33,10 @@ class AppTheme{
           color: Colors.black,
           fontWeight: FontWeight.bold,
         ),
+        subtitle2: TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.bold,
+        )
       ),
       primaryColor: Colors.black,
 
@@ -42,6 +46,11 @@ class AppTheme{
 
   static ThemeData dark(){
     return ThemeData(
+      inputDecorationTheme: InputDecorationTheme(
+        hintStyle: TextStyle(
+          color: Colors.white
+        )
+      ),
       backgroundColor: kDrawerDark,
       scaffoldBackgroundColor: kBackgroundDark,
       appBarTheme: AppBarTheme(
@@ -70,11 +79,17 @@ class AppTheme{
         bodyText1: TextStyle(
           color: Colors.white,
           fontWeight: FontWeight.bold,
+          fontSize: 16.0,
         ),
         headline5: TextStyle(
           color: Colors.white,
           fontWeight: FontWeight.bold,
+          fontSize: 20.0
         ),
+        subtitle2: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        )
       ),
       primaryColor: Colors.white,
     );

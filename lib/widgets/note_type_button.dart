@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
+
 class NoteTypeButton extends StatelessWidget {
   final Function onTap;
   final String label;
+  final Color labelColor;
   final Color color;
   final Color borderColor;
 
-  const NoteTypeButton({Key key, this.onTap, this.label, this.color, this.borderColor}) : super(key: key);
+  const NoteTypeButton(
+      {Key key,
+      this.onTap,
+      this.label,
+      this.labelColor,
+      this.color,
+      this.borderColor})
+      : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -18,12 +27,16 @@ class NoteTypeButton extends StatelessWidget {
           color: borderColor == null ? Colors.white : borderColor,
         ),
       ),
-      child: GestureDetector(
-        onTap: onTap,
+      child: FlatButton(
+        padding: EdgeInsets.all(0.0),
+        onPressed: onTap,
         child: Center(
-          child: Text(label, style: TextStyle(
-            color: Colors.white,
-          ),),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: Colors.white,
+            ),
+          ),
         ),
       ),
     );

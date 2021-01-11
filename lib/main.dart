@@ -28,7 +28,7 @@ class MatApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-      theme: themeNotifier.isDarkTheme == true ? AppTheme.dark() : AppTheme.light(),
+      theme: AppTheme.dark(),
       home: HomePage(),
     );
   }
