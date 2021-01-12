@@ -1,54 +1,47 @@
-import 'package:flutter/material.dart';
 import 'package:circular_check_box/circular_check_box.dart';
-import 'package:intl/intl.dart';
-import 'package:notes/models/note.dart';
-import 'package:notes/pages/info_page.dart';
-import 'package:notes/widgets/check_tile.dart';
+import 'package:flutter/material.dart';
 import 'package:notes/widgets/note_type_button.dart';
+import 'package:intl/intl.dart';
 
-class TodoPage extends StatefulWidget {
+class AddNote extends StatefulWidget {
+  const AddNote();
   @override
-  _TodoPageState createState() => _TodoPageState();
+  _AddNoteState createState() => _AddNoteState();
 }
 
-class _TodoPageState extends State<TodoPage> {
+class _AddNoteState extends State<AddNote> {
   TextEditingController titleController = TextEditingController();
+  TextEditingController _infoEditingController = TextEditingController();
+  double _inputHeight = 50.0;
+  bool isTodo = true;
   static List<String> friendsList = [null];
-  bool _isChecked = false;
-  static List<TodoNote> todoList = [null];
 
-  List<Widget> checkTileList = [CheckTile(), CheckTile(), CheckTile()];
+  _AddNoteState();
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _infoEditingController.addListener(_checkInputHeight);
+  }
 
-  Widget _checkTile() {
-    return Row(
-      children: [
-        CircularCheckBox(
-          inactiveColor: Colors.white,
-          disabledColor: Colors.transparent,
-          checkColor: Colors.green,
-          value: _isChecked,
-          onChanged: (value) {
-            setState(() {
-              _isChecked = !_isChecked;
-            });
-          },
-        ),
-        SizedBox(
-          width: 10.0,
-        ),
-        Expanded(
-          child: TextField(
-            onSubmitted: (value) {
-              checkTileList.add(_checkTile());
-            },
-            cursorColor: Theme.of(context).primaryColor,
-            decoration: InputDecoration(
-              border: InputBorder.none,
-            ),
-          ),
-        )
-      ],
-    );
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    _infoEditingController.dispose();
+    super.dispose();
+  }
+
+  void _checkInputHeight() async {
+    int count = _infoEditingController.text.split("\n").length;
+    if (count == 0 && _inputHeight == 50.0) {
+      return;
+    }
+    if (count <= 5) {
+      var newHeight = count == 0 ? 50.0 : 28.0 + (count * 18.0);
+      setState(() {
+        _inputHeight = newHeight;
+      });
+    }
   }
 
   @override
@@ -62,33 +55,22 @@ class _TodoPageState extends State<TodoPage> {
               SizedBox(
                 height: 60.0,
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    getDateTime(),
-                    style: Theme.of(context).textTheme.bodyText1,
-                  ),
-                  IconButton(
-                    iconSize: 28.0,
-                    icon: Icon(Icons.check),
-                    onPressed: () {
-                      //print(friendsList);
-                      print(todoList.first);
-                    },
-                  )
-                ],
+              Text(
+                getTopDateTime(),
+                style: Theme.of(context).textTheme.bodyText1,
               ),
-              SizedBox(
-                height: 20.0,
-              ),
+              //SizedBox(height: 20.0,),
               TextField(
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
                 controller: titleController,
-                onChanged: (value) {
-                  titleController.text.toUpperCase();
-                },
                 cursorColor: Theme.of(context).primaryColor,
+                onChanged: (value) {
+                  updateTitle();
+                },
                 decoration: InputDecoration(
                   border: InputBorder.none,
                   hintText: "Title",
@@ -99,10 +81,14 @@ class _TodoPageState extends State<TodoPage> {
                 height: 10.0,
               ),
               Expanded(
-                child: ListView(physics: BouncingScrollPhysics(), children: [
-                  ..._getFriends(),
-                ]),
+                child: ListView(
+                    padding: EdgeInsets.all(0.0),
+                    physics: BouncingScrollPhysics(),
+                    children: [
+                      ..._getFriends(),
+                    ]),
               ),
+              //Spacer(),
               SizedBox(
                 height: 10.0,
               ),
@@ -110,54 +96,78 @@ class _TodoPageState extends State<TodoPage> {
                 children: [
                   NoteTypeButton(
                     onTap: () {
-                      Navigator.of(context)
-                          .push(MaterialPageRoute(builder: (context) {
-                        return InfoPage();
-                      }));
+                      setState(() {
+                        isTodo = true;
+                      });
                     },
                     label: "Info",
-                    color: Colors.transparent,
+                    color: isTodo ? Colors.green : Colors.transparent,
+                    borderColor: isTodo ? Colors.green : Colors.white,
                   ),
                   SizedBox(
                     width: 20.0,
                   ),
                   NoteTypeButton(
                     onTap: () {
-                      Navigator.of(context)
-                          .push(MaterialPageRoute(builder: (context) {
-                        return TodoPage();
-                      }));
+                      setState(() {
+                        isTodo = false;
+                      });
                     },
                     label: "Todo",
-                    color: Colors.green,
-                    borderColor: Colors.green,
+                    color: !isTodo ? Colors.green : Colors.transparent,
+                    borderColor: !isTodo ? Colors.green : Colors.white,
                   ),
                 ],
               ),
               SizedBox(
                 height: MediaQuery.of(context).size.height * .05,
-              ),
+              )
             ],
           )),
     );
   }
 
+  TextField descTextField() {
+    return TextField(
+      style: TextStyle(color: Colors.white),
+      controller: _infoEditingController,
+      textInputAction: TextInputAction.newline,
+      keyboardType: TextInputType.multiline,
+      maxLines: null,
+      onChanged: (value) {
+        updateInfo();
+      },
+      cursorColor: Theme.of(context).primaryColor,
+      decoration: InputDecoration(
+        border: InputBorder.none,
+        hintText: "Note something down",
+        hintStyle: Theme.of(context).textTheme.bodyText1,
+      ),
+    );
+  }
+
   List<Widget> _getFriends() {
     List<Widget> friendsTextFields = [];
-    for (int i = 0; i < friendsList.length; i++) {
-      friendsTextFields.add(Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16.0),
-        child: Row(
-          children: [
-            Expanded(child: FriendTextFields(i)),
-            SizedBox(
-              width: 16,
-            ),
-            // we need add button at last friends row
-            _addRemoveButton(i == friendsList.length - 1, i),
-          ],
-        ),
-      ));
+    if (isTodo == true) {
+      friendsTextFields.removeRange(0, friendsTextFields.length);
+      friendsTextFields.add(descTextField());
+    } else {
+      friendsTextFields.removeRange(0, friendsTextFields.length);
+      for (int i = 0; i < friendsList.length; i++) {
+        friendsTextFields.add(Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16.0),
+          child: Row(
+            children: [
+              Expanded(child: FriendTextFields(i)),
+              SizedBox(
+                width: 16,
+              ),
+              // we need add button at last friends row
+              _addRemoveButton(i == friendsList.length - 1, i),
+            ],
+          ),
+        ));
+      }
     }
     return friendsTextFields;
   }
@@ -188,14 +198,24 @@ class _TodoPageState extends State<TodoPage> {
     );
   }
 
-  String getDateTime() {
+  void updateTitle() {}
+
+  void updateInfo() {}
+
+  String getTopDateTime() {
     DateTime now = DateTime.now();
     String currentTime = now.hour.toString() + ":" + now.minute.toString();
     String date = now.day.toString() + "," + now.year.toString();
-    DateFormat formatter = DateFormat("MMM dd, yyyy");
+    DateFormat formatter = DateFormat("MMMM dd, yyyy");
     var formatted = formatter.format(now);
     String fullDate = formatted.toString() + " " + currentTime;
     return fullDate;
+  }
+
+  String getTileDate() {
+    DateTime now = DateTime.now();
+    String df = DateFormat.ABBR_MONTH;
+    return df;
   }
 }
 
@@ -210,7 +230,6 @@ class _FriendTextFieldsState extends State<FriendTextFields> {
   TextEditingController _nameController;
 
   bool someBooleanValue = false;
-  TodoNote todoNote;
 
   @override
   void initState() {
@@ -227,15 +246,14 @@ class _FriendTextFieldsState extends State<FriendTextFields> {
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _nameController.text = _TodoPageState.friendsList[widget.index] ?? '';
+      _nameController.text = _AddNoteState.friendsList[widget.index] ?? '';
     });
 
     return TextFormField(
       style: TextStyle(color: Colors.white),
       controller: _nameController,
       onChanged: (v) {
-        _TodoPageState.friendsList[widget.index] = v;
-        _TodoPageState.todoList[widget.index].info = v;
+        _AddNoteState.friendsList[widget.index] = v;
       },
       decoration: InputDecoration(
         icon: CircularCheckBox(
@@ -245,12 +263,9 @@ class _FriendTextFieldsState extends State<FriendTextFields> {
             value: someBooleanValue,
             materialTapTargetSize: MaterialTapTargetSize.padded,
             onChanged: (bool x) {
-              //_TodoPageState.todoList[widget.index].isChecked = x;
               setState(() {
                 someBooleanValue = x;
               });
-
-              //print("wotreksxjhvhfdnjdfcnj,jdbmhbfhmbvfhebfewnmbjjsdcmc s");
             }),
         hintText: 'TODO',
         hintStyle: TextStyle(color: Colors.white30),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:notes/models/note.dart';
-import 'package:notes/pages/info_page.dart';
+import 'package:notes/pages/add_note_page.dart';
 import 'package:notes/styles/constant_colors.dart';
 import 'package:notes/widgets/app_drawer.dart';
 import 'package:notes/widgets/bottom_navigation.dart';
@@ -22,7 +21,7 @@ class HomePage extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-            return InfoPage();
+            return AddNote();
           }));
         },
         child: Icon(
