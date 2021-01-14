@@ -6,11 +6,11 @@ class DbService {
   static Database _db;
   static const String dbName = "note.db";
   static const String noteTable = "noteTable";
-  static const String colId = "colId";
-  static const String colTitle = "colTitle";
-  static const String colDesc = "colDesc";
-  static const String colTodo = "colTodo";
-  static const String colDate = "colDate";
+  static const String colId = "id";
+  static const String colTitle = "title";
+  static const String colDesc = "description";
+  static const String colTodo = "todo";
+  static const String colDate = "date";
 
   Future<Database> get db async {
     if (_db != null) {
@@ -29,44 +29,43 @@ class DbService {
 
   void _onCreate(Database database, int version) async {
     await database.execute(
-        "CREATE TABLE $noteTable($colId INTEGER PRIMARY KEY AUTOINCREMENT, $colTitle TEXT, $colDesc TEXT $colTodo TEXT, $colDate TEXT)");
+        "CREATE TABLE $noteTable($colId INTEGER PRIMARY KEY AUTOINCREMENT, $colTitle TEXT, $colDesc TEXT, $colTodo TEXT, $colDate TEXT)");
   }
 
-  Future<bool> insertNote(Note note) async {
+  Future<int> insertNote(Note note) async {
     Database dbClient = await db;
-    bool isSuccess = false;
+    int result;
     if (note != null) {
-      int result = await dbClient.insert(noteTable, note.toMap());
-      isSuccess = result == 1 ? true : false;
+      result = await dbClient.insert(noteTable, note.toMap());
     }
-    return isSuccess;
+    return result;
   }
 
-  Future<bool> updateNote(Note note) async {
+  Future<int> updateNote(Note note) async {
     Database dbClient = await db;
-    bool isSuccess = false;
+    int result;
     if (noteTable != null) {
-      int result = await dbClient.update(noteTable, note.toMap(),
+      result = await dbClient.update(noteTable, note.toMap(),
           where: "$colId = ?", whereArgs: [note.id]);
-      isSuccess = result == 1 ? true : false;
+
     }
-    return isSuccess;
+    return result;
   }
 
-  Future<bool> deleteNote(Note note) async {
+  Future<int> deleteNote(Note note) async {
     Database dbClient = await db;
-    bool isSuccess = false;
+    int result;
     if (note != null) {
       int result = await dbClient
           .delete(noteTable, where: "$colId = ? ", whereArgs: [note.id]);
-      isSuccess = result == 1 ? true : false;
     }
-    return isSuccess;
+    return result;
   }
 
   Future<List<Note>> getNotes() async {
     Database dbClient = await db;
-    List<Map> map = await dbClient.query(noteTable);
+    List<Map> map = await dbClient.query(noteTable,
+        columns: [colId, colTitle, colDesc, colTodo, colDate]);
     return map.map((e) => Note.fromMapObject(e)).toList();
   }
 }

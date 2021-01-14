@@ -1,16 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:notes/models/note.dart';
 import 'package:notes/pages/add_note_page.dart';
+import 'package:notes/services/db_service.dart';
 import 'package:notes/styles/constant_colors.dart';
 import 'package:notes/widgets/app_drawer.dart';
 import 'package:notes/widgets/bottom_navigation.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
-class HomePage extends StatelessWidget {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
+class HomePage extends StatefulWidget {
   HomePage();
+
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  DbService dbService = DbService();
   void _openDrawer() {
     _scaffoldKey.currentState.openDrawer();
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
   }
 
   @override
@@ -21,7 +35,9 @@ class HomePage extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-            return AddNote();
+            List<Map<String, bool>> todo;
+            return AddNote(
+                Note(title: "", description: "", date: "", todo: todo));
           }));
         },
         child: Icon(
@@ -97,6 +113,25 @@ class HomePage extends StatelessWidget {
             SizedBox(
               height: 10.0,
             ),
+            Expanded(
+              child: FutureBuilder(
+                future: dbService.getNotes(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    List<Note> note = snapshot.data;
+                    return ListView.builder(
+                      itemCount: note.length,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          title: Text(note[index].title),
+                        );
+                      },
+                    );
+                  }
+                  return Container();
+                },
+              ),
+            )
           ],
         ),
       ),

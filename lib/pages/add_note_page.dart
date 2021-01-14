@@ -1,38 +1,45 @@
 import 'package:circular_check_box/circular_check_box.dart';
 import 'package:flutter/material.dart';
+import 'package:notes/models/note.dart';
+import 'package:notes/services/db_service.dart';
 import 'package:notes/widgets/note_type_button.dart';
 import 'package:intl/intl.dart';
 
 class AddNote extends StatefulWidget {
-  const AddNote();
+  final Note note;
+  const AddNote(this.note);
   @override
-  _AddNoteState createState() => _AddNoteState();
+  _AddNoteState createState() => _AddNoteState(note);
 }
 
 class _AddNoteState extends State<AddNote> {
+  final Note note;
+  _AddNoteState(this.note);
+  DbService dbService = DbService();
   TextEditingController titleController = TextEditingController();
-  TextEditingController _infoEditingController = TextEditingController();
+  TextEditingController descController = TextEditingController();
   double _inputHeight = 50.0;
-  bool isTodo = true;
+  bool isTodo = false;
   static List<String> friendsList = [null];
+  static List<bool> toogles = [null];
+  static List<Map<String, bool>> todoList = [];
 
-  _AddNoteState();
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    _infoEditingController.addListener(_checkInputHeight);
+    descController.addListener(_checkInputHeight);
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
-    _infoEditingController.dispose();
+    descController.dispose();
     super.dispose();
   }
 
   void _checkInputHeight() async {
-    int count = _infoEditingController.text.split("\n").length;
+    int count = descController.text.split("\n").length;
     if (count == 0 && _inputHeight == 50.0) {
       return;
     }
@@ -46,6 +53,8 @@ class _AddNoteState extends State<AddNote> {
 
   @override
   Widget build(BuildContext context) {
+    //titleController.text = note.title;
+    //descController.text = note.description;
     return Scaffold(
       body: Container(
           padding: EdgeInsets.fromLTRB(16.0, 10.0, 16.0, 10.0),
@@ -55,9 +64,27 @@ class _AddNoteState extends State<AddNote> {
               SizedBox(
                 height: 60.0,
               ),
-              Text(
-                getTopDateTime(),
-                style: Theme.of(context).textTheme.bodyText1,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    getTopDateTime(),
+                    style: Theme.of(context).textTheme.bodyText1,
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.check),
+                    onPressed: () {
+                      saveNote();
+                      //todoList.add({friendsList[0]: toogles[0]});
+                      //print(todoList);
+                      //print(friendsList);
+                      //print("-----------------");
+                      //print(toogles);
+                      //print(isTodo);
+                      //updateTodo();
+                    },
+                  )
+                ],
               ),
               //SizedBox(height: 20.0,),
               TextField(
@@ -97,12 +124,12 @@ class _AddNoteState extends State<AddNote> {
                   NoteTypeButton(
                     onTap: () {
                       setState(() {
-                        isTodo = true;
+                        isTodo = false;
                       });
                     },
                     label: "Info",
-                    color: isTodo ? Colors.green : Colors.transparent,
-                    borderColor: isTodo ? Colors.green : Colors.white,
+                    color: !isTodo ? Colors.green : Colors.transparent,
+                    borderColor: !isTodo ? Colors.green : Colors.white,
                   ),
                   SizedBox(
                     width: 20.0,
@@ -110,18 +137,18 @@ class _AddNoteState extends State<AddNote> {
                   NoteTypeButton(
                     onTap: () {
                       setState(() {
-                        isTodo = false;
+                        isTodo = true;
                       });
                     },
                     label: "Todo",
-                    color: !isTodo ? Colors.green : Colors.transparent,
-                    borderColor: !isTodo ? Colors.green : Colors.white,
+                    color: isTodo ? Colors.green : Colors.transparent,
+                    borderColor: isTodo ? Colors.green : Colors.white,
                   ),
                 ],
               ),
               SizedBox(
                 height: MediaQuery.of(context).size.height * .05,
-              )
+              ),
             ],
           )),
     );
@@ -130,12 +157,12 @@ class _AddNoteState extends State<AddNote> {
   TextField descTextField() {
     return TextField(
       style: TextStyle(color: Colors.white),
-      controller: _infoEditingController,
+      controller: descController,
       textInputAction: TextInputAction.newline,
       keyboardType: TextInputType.multiline,
       maxLines: null,
       onChanged: (value) {
-        updateInfo();
+        updateDesc();
       },
       cursorColor: Theme.of(context).primaryColor,
       decoration: InputDecoration(
@@ -148,7 +175,7 @@ class _AddNoteState extends State<AddNote> {
 
   List<Widget> _getFriends() {
     List<Widget> friendsTextFields = [];
-    if (isTodo == true) {
+    if (isTodo != true) {
       friendsTextFields.removeRange(0, friendsTextFields.length);
       friendsTextFields.add(descTextField());
     } else {
@@ -176,12 +203,17 @@ class _AddNoteState extends State<AddNote> {
   Widget _addRemoveButton(bool add, int index) {
     return InkWell(
       onTap: () {
-        if (add) {
-          // add new text-fields at the top of all friends textfields
-          friendsList.insert(0, null);
-        } else
-          friendsList.removeAt(index);
-        setState(() {});
+        setState(() {
+          if (add) {
+            // add new text-fields at the top of all friends textfields
+            //todo fix the null initial issue
+            toogles.insert(0, null);
+            friendsList.insert(0, null);
+          } else {
+            toogles.removeAt(index);
+            friendsList.removeAt(index);
+          }
+        });
       },
       child: Container(
         width: 30,
@@ -198,15 +230,67 @@ class _AddNoteState extends State<AddNote> {
     );
   }
 
-  void updateTitle() {}
+  void updateTitle() {
+    note.title = titleController.text;
+  }
 
-  void updateInfo() {}
+  void updateDesc() {
+    note.description = descController.text;
+  }
+
+  void updateTodo() {
+    if (todoList.isNotEmpty) {
+      todoList.removeRange(0, todoList.length - 1);
+    }
+    for (int i = 0; i < toogles.length; i++) {
+      if (toogles[i] == null) {
+        toogles[i] = false;
+      }
+    }
+    print(toogles);
+    todoList = [];
+    for (int i = 0; i < friendsList.length; i++) {
+      todoList.add({friendsList[i]: toogles[i]});
+    }
+    //note.todo = todoList;
+    print("````````````````````````````````````````````````");
+    print(todoList);
+    // print(note.todo);
+  }
+
+  void saveNote() {
+    if (isTodo == true) {
+      note.description = null;
+      updateTodo();
+      save();
+      //save todo
+    } else {
+      note.todo = null;
+      // save info
+      save();
+    }
+  }
+
+  void save() async {
+    int result;
+    note.date = getTopDateTime();
+    if (note.id == null) {
+      //insert
+      result = await dbService.insertNote(note);
+    } else {
+      //update
+      //result = await dbService.updateNote(note);
+    }
+    if (result != 0) {
+      Navigator.pop(context);
+    }
+  }
 
   String getTopDateTime() {
     DateTime now = DateTime.now();
     String currentTime = now.hour.toString() + ":" + now.minute.toString();
     String date = now.day.toString() + "," + now.year.toString();
-    DateFormat formatter = DateFormat("MMMM dd, yyyy");
+    DateFormat formatter = DateFormat("MMM dd, yyyy");
     var formatted = formatter.format(now);
     String fullDate = formatted.toString() + " " + currentTime;
     return fullDate;
@@ -247,6 +331,8 @@ class _FriendTextFieldsState extends State<FriendTextFields> {
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       _nameController.text = _AddNoteState.friendsList[widget.index] ?? '';
+      someBooleanValue = _AddNoteState.toogles[widget.index] ?? false;
+      setState(() {});
     });
 
     return TextFormField(
@@ -265,6 +351,7 @@ class _FriendTextFieldsState extends State<FriendTextFields> {
             onChanged: (bool x) {
               setState(() {
                 someBooleanValue = x;
+                _AddNoteState.toogles[widget.index] = someBooleanValue;
               });
             }),
         hintText: 'TODO',
