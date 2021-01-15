@@ -6,6 +6,9 @@ import 'package:notes/styles/constant_colors.dart';
 import 'package:notes/widgets/app_drawer.dart';
 import 'package:notes/widgets/bottom_navigation.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:notes/widgets/info_Tile.dart';
+import 'package:notes/widgets/note_type.dart';
+import 'package:notes/widgets/note_type_button.dart';
 
 class HomePage extends StatefulWidget {
   HomePage();
@@ -119,13 +122,24 @@ class _HomePageState extends State<HomePage> {
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     List<Note> note = snapshot.data;
-                    return ListView.builder(
+                    return new StaggeredGridView.countBuilder(
+                      physics: BouncingScrollPhysics(),
+                      crossAxisCount: 4,
                       itemCount: note.length,
-                      itemBuilder: (context, index) {
-                        return ListTile(
-                          title: Text(note[index].title),
-                        );
+                      itemBuilder: (BuildContext context, int index) {
+                        if (note[index].description != null) {
+                          return InfoTile(
+                            title: note[index].title,
+                            infoText: note[index].description,
+                            date: note[index].date,
+                          );
+                        }
+                        return Container();
                       },
+                      staggeredTileBuilder: (int index) =>
+                          new StaggeredTile.count(2, index.isEven ? 3 : 3.5),
+                      mainAxisSpacing: 14.0,
+                      crossAxisSpacing: 14.0,
                     );
                   }
                   return Container();

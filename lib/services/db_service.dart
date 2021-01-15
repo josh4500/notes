@@ -47,7 +47,6 @@ class DbService {
     if (noteTable != null) {
       result = await dbClient.update(noteTable, note.toMap(),
           where: "$colId = ?", whereArgs: [note.id]);
-
     }
     return result;
   }

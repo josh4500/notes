@@ -1,46 +1,49 @@
 import 'package:flutter/material.dart';
 import 'package:notes/widgets/note_type_button.dart';
+
+import 'note_type.dart';
+
 class InfoTile extends StatelessWidget {
   final String title;
   final String infoText;
   final String date;
 
-  const InfoTile({Key key, this.title, this.infoText, this.date}) : super(key: key);
+  const InfoTile({this.title, this.infoText, this.date});
   @override
   Widget build(BuildContext context) {
-    var width = MediaQuery.of(context).size.width;
-    return Container(
-      width: width * 0.4,
-      padding: EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Theme.of(context).backgroundColor,
-        borderRadius: BorderRadius.all(
-          Radius.circular(10.0),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: Theme.of(context).textTheme.subtitle2,),
-          SizedBox(height: 7.0,),
-          Text(infoText, style: Theme.of(context).textTheme.bodyText1.copyWith(fontWeight: FontWeight.normal),),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              NoteTypeButton(
-                onTap: (){
-
-                },
-                color: Colors.transparent,
-                borderColor: Colors.white,
-                label: "Info",
-                labelColor: Colors.white,
+    return new Container(
+        padding: EdgeInsets.all(20.0),
+        decoration: BoxDecoration(
+            color: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
+            borderRadius: BorderRadius.all(
+              Radius.circular(12.0),
+            )),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            new Text(
+              this.title,
+              style: TextStyle(
+                  height: 2.0,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 19.0),
+            ),
+            SizedBox(
+              height: 8.0,
+            ),
+            Text(
+              this.infoText,
+              style: TextStyle(
+                color: Colors.grey,
               ),
-              Text(date),
-            ],
-          )
-        ],
-      ),
-    );
+            ),
+            Spacer(),
+            NoteType(
+              label: "Info",
+              date: this.date,
+            ),
+          ],
+        ));
   }
 }
