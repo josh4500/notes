@@ -1,6 +1,6 @@
 # notes
 
-A new Flutter application.
+A note App with interesting features.
 
 ## Getting Started
 
