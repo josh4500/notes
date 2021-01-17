@@ -1,10 +1,13 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
+import 'package:notes/models/note_dept.dart';
+
 class Note {
   int id;
   String title;
   String description;
-  List<Map<String, bool>> todo;
+  Map<String, dynamic> todo;
   String date;
 
   Note({this.title, this.description, this.todo, this.date});
@@ -13,13 +16,14 @@ class Note {
     id = map["id"];
     title = map["title"];
     description = map["description"];
-    List<Map<String, bool>> todoDecode = jsonDecode(map["todo"]);
+    var todoDecode = jsonDecode(map["todo"]) as Map;
     todo = todoDecode;
     date = map["date"];
   }
 
   Map<String, dynamic> toMap() {
     Map<String, dynamic> map = Map<String, dynamic>();
+
     if (id != null) {
       map["id"] = id;
     }

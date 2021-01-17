@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:notes/models/note.dart';
 import 'package:notes/pages/add_note_page.dart';
+import 'package:notes/repository/note_repository.dart';
 import 'package:notes/services/db_service.dart';
 import 'package:notes/styles/constant_colors.dart';
 import 'package:notes/widgets/app_drawer.dart';
-import 'package:notes/widgets/bottom_navigation.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:notes/widgets/info_Tile.dart';
-import 'package:notes/widgets/note_type.dart';
-import 'package:notes/widgets/note_type_button.dart';
+import 'package:notes/widgets/todo_tile.dart';
 
 class HomePage extends StatefulWidget {
   HomePage();
@@ -20,13 +19,20 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   DbService dbService = DbService();
+  Future<List<Note>> notesList;
   void _openDrawer() {
     _scaffoldKey.currentState.openDrawer();
+  }
+
+  void getNote() async {
+    //notes = await NoteRepo.getRefinedNote();
+    notesList = dbService.getNotes();
   }
 
   @override
   void initState() {
     // TODO: implement initState
+    getNote();
     super.initState();
   }
 
@@ -36,12 +42,18 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       //backgroundColor: kBackgroundDark,
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-            List<Map<String, bool>> todo;
+        onPressed: () async {
+          bool result = await Navigator.of(context)
+              .push(MaterialPageRoute(builder: (context) {
+            Map<String, bool> todo;
             return AddNote(
                 Note(title: "", description: "", date: "", todo: todo));
           }));
+          if (result == true) {
+            print("kamui");
+            notesList = dbService.getNotes();
+            setState(() {});
+          }
         },
         child: Icon(
           Icons.add,
@@ -117,35 +129,49 @@ class _HomePageState extends State<HomePage> {
               height: 10.0,
             ),
             Expanded(
-              child: FutureBuilder(
-                future: dbService.getNotes(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    List<Note> note = snapshot.data;
-                    return new StaggeredGridView.countBuilder(
-                      physics: BouncingScrollPhysics(),
-                      crossAxisCount: 4,
-                      itemCount: note.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        if (note[index].description != null) {
-                          return InfoTile(
-                            title: note[index].title,
-                            infoText: note[index].description,
-                            date: note[index].date,
-                          );
-                        }
-                        return Container();
-                      },
-                      staggeredTileBuilder: (int index) =>
-                          new StaggeredTile.count(2, index.isEven ? 3 : 3.5),
-                      mainAxisSpacing: 14.0,
-                      crossAxisSpacing: 14.0,
-                    );
-                  }
-                  return Container();
-                },
-              ),
-            )
+                child: FutureBuilder(
+              future: notesList,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  var notes = snapshot.data;
+                  return new StaggeredGridView.countBuilder(
+                    physics: BouncingScrollPhysics(),
+                    crossAxisCount: 4,
+                    itemCount: notes.length ?? 0,
+                    itemBuilder: (BuildContext context, int index) {
+                      print("***************************");
+                      print(notes[index].title);
+                      if (notes[index].description != null) {
+                        return InfoTile(
+                          title: notes[index].title,
+                          infoText: notes[index].description,
+                          date: notes[index].date,
+                        );
+                      }
+                      List<Map<String, bool>> todoList = [];
+                      //todoList.add(notes[index].todo);
+                      var tempMap = notes[index].todo?.cast<String, bool>();
+                      var k = tempMap.keys?.toList();
+                      var v = tempMap.values?.toList();
+                      for (var i = 0; i < tempMap.length; i++) {
+                        todoList.add({k[i]: v[i]});
+                      }
+                      return TodoTile(
+                        title: notes[index].title,
+                        todo: todoList,
+                        numOfTodo: notes.length,
+                        date: notes[index].date,
+                      );
+                    },
+                    staggeredTileBuilder: (int index) =>
+                        new StaggeredTile.count(2, index.isEven ? 3 : 3.5),
+                    mainAxisSpacing: 14.0,
+                    crossAxisSpacing: 14.0,
+                  );
+                }
+                return Container();
+              },
+            ))
           ],
         ),
       ),

@@ -20,6 +20,7 @@ class _AddNoteState extends State<AddNote> {
   TextEditingController descController = TextEditingController();
   double _inputHeight = 50.0;
   bool isTodo = false;
+  bool _validate = false;
   static List<String> friendsList = [null];
   static List<bool> toogles = [null];
   static List<Map<String, bool>> todoList = [];
@@ -169,6 +170,7 @@ class _AddNoteState extends State<AddNote> {
         border: InputBorder.none,
         hintText: "Note something down",
         hintStyle: Theme.of(context).textTheme.bodyText1,
+        errorText: _validate ? "note something down" : null,
       ),
     );
   }
@@ -252,22 +254,34 @@ class _AddNoteState extends State<AddNote> {
     for (int i = 0; i < friendsList.length; i++) {
       todoList.add({friendsList[i]: toogles[i]});
     }
-    //note.todo = todoList;
+    Map<String, bool> tempMap = {};
+    for (var i in todoList) {
+      tempMap.addAll(i);
+    }
+    note.todo = tempMap;
     print("````````````````````````````````````````````````");
     print(todoList);
+    print(note.todo);
     // print(note.todo);
   }
 
   void saveNote() {
     if (isTodo == true) {
       note.description = null;
-      updateTodo();
-      save();
+      if (_FriendTextFieldsState.formKey.currentState.validate()) {
+        updateTodo();
+        save();
+      }
       //save todo
     } else {
       note.todo = null;
+      setState(() {
+        descController.text.isEmpty ? _validate = true : _validate = false;
+      });
       // save info
-      save();
+      if (!_validate) {
+        save();
+      }
     }
   }
 
@@ -282,7 +296,7 @@ class _AddNoteState extends State<AddNote> {
       //result = await dbService.updateNote(note);
     }
     if (result != 0) {
-      Navigator.pop(context);
+      Navigator.pop(context, true);
     }
   }
 
@@ -312,7 +326,7 @@ class FriendTextFields extends StatefulWidget {
 
 class _FriendTextFieldsState extends State<FriendTextFields> {
   TextEditingController _nameController;
-
+  static var formKey = GlobalKey<FormState>();
   bool someBooleanValue = false;
 
   @override
@@ -335,33 +349,36 @@ class _FriendTextFieldsState extends State<FriendTextFields> {
       setState(() {});
     });
 
-    return TextFormField(
-      style: TextStyle(color: Colors.white),
-      controller: _nameController,
-      onChanged: (v) {
-        _AddNoteState.friendsList[widget.index] = v;
-      },
-      decoration: InputDecoration(
-        icon: CircularCheckBox(
-            checkColor: Colors.white,
-            activeColor: Colors.green,
-            inactiveColor: Colors.white,
-            value: someBooleanValue,
-            materialTapTargetSize: MaterialTapTargetSize.padded,
-            onChanged: (bool x) {
-              setState(() {
-                someBooleanValue = x;
-                _AddNoteState.toogles[widget.index] = someBooleanValue;
-              });
-            }),
-        hintText: 'TODO',
-        hintStyle: TextStyle(color: Colors.white30),
-        border: InputBorder.none,
+    return Form(
+      key: formKey,
+      child: TextFormField(
+        style: TextStyle(color: Colors.white),
+        controller: _nameController,
+        onChanged: (v) {
+          _AddNoteState.friendsList[widget.index] = v;
+        },
+        decoration: InputDecoration(
+          icon: CircularCheckBox(
+              checkColor: Colors.white,
+              activeColor: Colors.green,
+              inactiveColor: Colors.white,
+              value: someBooleanValue,
+              materialTapTargetSize: MaterialTapTargetSize.padded,
+              onChanged: (bool x) {
+                setState(() {
+                  someBooleanValue = x;
+                  _AddNoteState.toogles[widget.index] = someBooleanValue;
+                });
+              }),
+          hintText: 'TODO',
+          hintStyle: TextStyle(color: Colors.white30),
+          border: InputBorder.none,
+        ),
+        validator: (v) {
+          if (v.isEmpty) return 'Please enter something';
+          return null;
+        },
       ),
-      validator: (v) {
-        if (v.trim().isEmpty) return 'Please enter something';
-        return null;
-      },
     );
   }
 }
