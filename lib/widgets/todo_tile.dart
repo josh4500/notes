@@ -35,6 +35,7 @@ class TodoTile extends StatelessWidget {
           Expanded(
             child: ListView.builder(
               padding: EdgeInsets.all(0.0),
+              physics: NeverScrollableScrollPhysics(),
               itemCount: todo.length ?? 0,
               itemBuilder: (context, index) {
                 return Row(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:notes/models/note.dart';
 import 'package:notes/pages/add_note_page.dart';
+import 'package:notes/pages/read_info_note.dart';
+import 'package:notes/pages/read_todo_page.dart';
 import 'package:notes/repository/note_repository.dart';
 import 'package:notes/services/db_service.dart';
 import 'package:notes/styles/constant_colors.dart';
@@ -142,10 +144,22 @@ class _HomePageState extends State<HomePage> {
                       print("***************************");
                       print(notes[index].title);
                       if (notes[index].description != null) {
-                        return InfoTile(
-                          title: notes[index].title,
-                          infoText: notes[index].description,
-                          date: notes[index].date,
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(context,
+                                MaterialPageRoute(builder: (context) {
+                              return ReadInfoNote(
+                                date: notes[index].date,
+                                title: notes[index].title,
+                                info: notes[index].description,
+                              );
+                            }));
+                          },
+                          child: InfoTile(
+                            title: notes[index].title,
+                            infoText: notes[index].description,
+                            date: notes[index].date,
+                          ),
                         );
                       }
                       List<Map<String, bool>> todoList = [];
@@ -156,11 +170,23 @@ class _HomePageState extends State<HomePage> {
                       for (var i = 0; i < tempMap.length; i++) {
                         todoList.add({k[i]: v[i]});
                       }
-                      return TodoTile(
-                        title: notes[index].title,
-                        todo: todoList,
-                        numOfTodo: notes.length,
-                        date: notes[index].date,
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (context) {
+                            return ReadTodoPage(
+                              date: notes[index].date,
+                              title: notes[index].title,
+                              todo: todoList,
+                            );
+                          }));
+                        },
+                        child: TodoTile(
+                          title: notes[index].title,
+                          todo: todoList,
+                          numOfTodo: notes.length,
+                          date: notes[index].date,
+                        ),
                       );
                     },
                     staggeredTileBuilder: (int index) =>

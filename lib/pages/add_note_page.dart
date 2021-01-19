@@ -113,7 +113,7 @@ class _AddNoteState extends State<AddNote> {
                     padding: EdgeInsets.all(0.0),
                     physics: BouncingScrollPhysics(),
                     children: [
-                      ..._getFriends(),
+                      ..._getTodos(),
                     ]),
               ),
               //Spacer(),
@@ -175,7 +175,7 @@ class _AddNoteState extends State<AddNote> {
     );
   }
 
-  List<Widget> _getFriends() {
+  List<Widget> _getTodos() {
     List<Widget> friendsTextFields = [];
     if (isTodo != true) {
       friendsTextFields.removeRange(0, friendsTextFields.length);
@@ -187,7 +187,7 @@ class _AddNoteState extends State<AddNote> {
           padding: const EdgeInsets.symmetric(vertical: 16.0),
           child: Row(
             children: [
-              Expanded(child: FriendTextFields(i)),
+              Expanded(child: TodoTextFields(i)),
               SizedBox(
                 width: 16,
               ),
@@ -268,10 +268,16 @@ class _AddNoteState extends State<AddNote> {
   void saveNote() {
     if (isTodo == true) {
       note.description = null;
-      if (_FriendTextFieldsState.formKey.currentState.validate()) {
+      setState(() {
+        _TodoTextFieldsState.todoController.text.isEmpty
+            ? _TodoTextFieldsState.validate = true
+            : _TodoTextFieldsState.validate = false;
+      });
+      if (!_TodoTextFieldsState.validate) {
         updateTodo();
         save();
       }
+
       //save todo
     } else {
       note.todo = null;
@@ -317,68 +323,67 @@ class _AddNoteState extends State<AddNote> {
   }
 }
 
-class FriendTextFields extends StatefulWidget {
+class TodoTextFields extends StatefulWidget {
   final int index;
-  FriendTextFields(this.index);
+  TodoTextFields(this.index);
   @override
-  _FriendTextFieldsState createState() => _FriendTextFieldsState();
+  _TodoTextFieldsState createState() => _TodoTextFieldsState();
 }
 
-class _FriendTextFieldsState extends State<FriendTextFields> {
-  TextEditingController _nameController;
-  static var formKey = GlobalKey<FormState>();
+class _TodoTextFieldsState extends State<TodoTextFields> {
+  static TextEditingController todoController;
+  //static var formKey = GlobalKey<FormState>();
+  static bool validate = false;
   bool someBooleanValue = false;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController();
+    todoController = TextEditingController();
   }
 
   @override
   void dispose() {
-    _nameController.dispose();
+    todoController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _nameController.text = _AddNoteState.friendsList[widget.index] ?? '';
+      todoController.text = _AddNoteState.friendsList[widget.index] ?? '';
       someBooleanValue = _AddNoteState.toogles[widget.index] ?? false;
       setState(() {});
     });
 
-    return Form(
-      key: formKey,
-      child: TextFormField(
-        style: TextStyle(color: Colors.white),
-        controller: _nameController,
-        onChanged: (v) {
-          _AddNoteState.friendsList[widget.index] = v;
-        },
-        decoration: InputDecoration(
-          icon: CircularCheckBox(
-              checkColor: Colors.white,
-              activeColor: Colors.green,
-              inactiveColor: Colors.white,
-              value: someBooleanValue,
-              materialTapTargetSize: MaterialTapTargetSize.padded,
-              onChanged: (bool x) {
-                setState(() {
-                  someBooleanValue = x;
-                  _AddNoteState.toogles[widget.index] = someBooleanValue;
-                });
-              }),
-          hintText: 'TODO',
-          hintStyle: TextStyle(color: Colors.white30),
-          border: InputBorder.none,
-        ),
-        validator: (v) {
-          if (v.isEmpty) return 'Please enter something';
-          return null;
-        },
+    return TextFormField(
+      style: TextStyle(color: Colors.white),
+      controller: todoController,
+      onChanged: (v) {
+        _AddNoteState.friendsList[widget.index] = v;
+      },
+      decoration: InputDecoration(
+        icon: CircularCheckBox(
+            checkColor: Colors.white,
+            activeColor: Colors.green,
+            inactiveColor: Colors.white,
+            value: someBooleanValue,
+            materialTapTargetSize: MaterialTapTargetSize.padded,
+            onChanged: (bool x) {
+              setState(() {
+                someBooleanValue = x;
+                _AddNoteState.toogles[widget.index] = someBooleanValue;
+              });
+            }),
+        hintText: 'TODO',
+        errorText: validate ? "todo cannot be empty" : null,
+        hintStyle: TextStyle(color: Colors.white30),
+        border: InputBorder.none,
       ),
+      validator: (v) {
+        if (v.isEmpty) return 'Please enter something';
+        return null;
+      },
     );
   }
 }
