@@ -344,7 +344,7 @@ class _TodoTextFieldsState extends State<TodoTextFields> {
 
   @override
   void dispose() {
-    todoController.dispose();
+    todoController.clear();
     super.dispose();
   }
 
